@@ -25,7 +25,7 @@ async def create_embed(general, state,name,time):
 
 
 
-cluster = MongoClient("mongodb://localhost:27017")
+cluster = MongoClient("mongodb+srv://ivanbozhkod:Lvbnhjdbx18@wotblitz.9ctju87.mongodb.net")
 database=cluster["wotblitz"]
 collection=database["user"]
 
