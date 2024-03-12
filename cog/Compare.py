@@ -3,6 +3,8 @@ from cog import DataBase
 
 async def name_tank(tank_id):
     result = await DataBase.name_tank(tank_id=tank_id)
+    if result is None:
+        return {"name":"unknown","tier":"unknown"}
     del result["tank_id"]
     del result["_id"]
     return result
