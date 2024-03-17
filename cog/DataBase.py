@@ -47,4 +47,8 @@ async def update():
 async def users(file:dict):
     name = file.get("name")
     player.replace_one(filter={"name":name},replacement=file,upsert=True)
-  
+
+async def set_users(file:dict):
+    discord_id = file.get("discord_id")
+    player.replace_one(filter={"discord_id":discord_id},replacement=file,upsert=True)
+    

@@ -1,9 +1,9 @@
-import aioschedule
+
 import discord
 from discord.ext import commands
 from pymongo import MongoClient
 from cog import DataBase,Search,Compare,Get
-import asyncio
+
 import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -50,19 +50,17 @@ async def on_ready():
    scheduler = AsyncIOScheduler()
    scheduler.add_job(power, "cron", hour=5, minute=00)
    scheduler.start()
- 
-      
-  
+   
 
 @bot.command(name = "set_player")
-async def player(ctx,name,region="eu"): 
+async def player(ctx,name=1,region="eu"): 
   
    result = await Search.search(name=name,region=region)
   
-   if result is None:
-       await ctx.send("Ник не найден")
-   elif result==1:
-      await ctx.send("Нету никнейма")
+   if name ==1:
+       await ctx.send("Вы не указали обезательный аргумент никнейм")
+   elif result is None:
+      await ctx.send("Ник не найден")
    else:
       a={} 
       y = await Get.session(user=result,region=region)
@@ -72,7 +70,7 @@ async def player(ctx,name,region="eu"):
       a["region"]=region
       a["name"]=name
       a["id"]=result    
-      await DataBase.users(a)
+      await DataBase.set_users(a)
       await DataBase.output(state_tank=y,general=x,user=result)
       await ctx.send(f"Сесия начата для {name}")
    
@@ -107,13 +105,13 @@ async def get(get,name=None):
 
 
 @bot.command(name = "start")
-async def start(start,name,region="eu"):
+async def start(start,name=1,region="eu"):
    result = await Search.search(name=name,region=region)
   
-   if result is None:
-       await start.send("Ник не найден")
-   elif result==1:
-      await start.send("Нету никнейма")
+   if name ==1:
+       await start.send("Вы не указали обезательный аргумент никнейм")
+   elif result is None:
+      await start.send("Ник не найден")
    else:
       a={}
       y = await Get.general(user=result,region=region)
