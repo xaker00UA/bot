@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from pymongo import MongoClient
 from cog import DataBase,Search,Compare,Get
-
+from config import TOKEN, KEY_DATABASE
 import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -25,11 +25,11 @@ async def create_embed(general, state,name,time):
 
 
 
-cluster = MongoClient("mongodb+srv://ivanbozhkod:Lvbnhjdbx18@wotblitz.9ctju87.mongodb.net")
+cluster = MongoClient(KEY_DATABASE)
 database=cluster["wotblitz"]
 collection=database["user"]
 
-TOKEN = 'MTIxMTk2NjM2MDMyMjU3MjMzMA.GHXfGG.o0jRMQZM3IuBeNGR6r9eT4gevWCL1aOMWCIuM4'
+TOKEN = TOKEN 
 PREFIX = '!'
 intents = discord.Intents().all()
 

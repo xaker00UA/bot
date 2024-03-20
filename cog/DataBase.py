@@ -1,8 +1,8 @@
 import asyncio
 from pymongo import MongoClient
 from cog import Get
-
-cluster = MongoClient("mongodb+srv://ivanbozhkod:Lvbnhjdbx18@wotblitz.9ctju87.mongodb.net/?retryWrites=true&w=majority")
+from config import KEY_DATABASE 
+cluster = MongoClient(KEY_DATABASE)
 database=cluster["wotblitz"]
 collection=database["state_machine"]
 gen=database["state"]
