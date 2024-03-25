@@ -1,25 +1,26 @@
 
-import discord
-from discord.ext import commands
+import disnake as discord
+from disnake.ext import commands
 from pymongo import MongoClient
 from cog import DataBase,Search,Compare,Get
-from config import TOKEN, KEY_DATABASE
+from config import TOKEN,KEY_DATABASE
 import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
 
 
-async def create_embed(general, state,name,time):
+async def create_embed(general, name,time,state=None):
 
 
 
    gen = '\n'.join(f"{key.ljust(15)}: {value}" for key, value in general.items())
 
-   embed=discord.Embed(title=f"Статистика игрока {name}",description=f"Сесия длиться {time}",colour=discord.Color.from_str("#7CFC00"))
+   embed=discord.Embed(title=f"Статистика игрока {name}",description=f"Сесия длиться {time}",colour=discord.Color.from_rgb(124,252,0))
    embed.add_field(name="Общая",value=f"```{gen} ```",inline=False)
-   for i in state:
-      embed.add_field(name=f"{i["name"]}",value=f"```{"\n".join(f"{key.ljust(15)}: {value}" for key,value in i.items() if key !="name" )} ```",inline=False)
+   if state is not None:
+      for i in state:
+         embed.add_field(name=f"{i["name"]}",value=f"```{"\n".join(f"{key.ljust(15)}: {value}" for key,value in i.items() if key !="name" )} ```",inline=False)
    return embed
 
 
@@ -29,8 +30,8 @@ cluster = MongoClient(KEY_DATABASE)
 database=cluster["wotblitz"]
 collection=database["user"]
 
-TOKEN = TOKEN 
-PREFIX = '!'
+TOKEN = TOKEN
+PREFIX = '.'
 intents = discord.Intents().all()
 
 
@@ -52,14 +53,16 @@ async def on_ready():
    scheduler.start()
    
 
-@bot.command(name = "set_player")
-async def player(ctx,name=1,region="eu"): 
-  
+
+
+
+@bot.slash_command(name = "set_player",description="Подвязать ДС к акаунту в игре")
+async def player(ctx, name:str, region:str=commands.Param (choices={"eu":"eu","na":"com","asia":"asia"})): 
+   
    result = await Search.search(name=name,region=region)
   
-   if name ==1:
-       await ctx.send("Вы не указали обезательный аргумент никнейм")
-   elif result is None:
+
+   if result is None:
       await ctx.send("Ник не найден")
    else:
       a={} 
@@ -76,7 +79,7 @@ async def player(ctx,name=1,region="eu"):
    
    
 
-@bot.command(name = "get")
+@bot.slash_command(name = "get",description="Полуить текущую активную сессию")
 async def get(get,name=None):
   
    if name is not None:
@@ -104,13 +107,12 @@ async def get(get,name=None):
       await get.send("Пользователь не отслежуеться")
 
 
-@bot.command(name = "start")
-async def start(start,name=1,region="eu"):
+@bot.slash_command(name = "start",description="Начать снова сессию или зарегестрировать акаунт")
+async def start(start,name:str,region:str=commands.Param (choices={"eu":"eu","na":"com","asia":"asia"})):
    result = await Search.search(name=name,region=region)
   
-   if name ==1:
-       await start.send("Вы не указали обезательный аргумент никнейм")
-   elif result is None:
+   
+   if result is None:
       await start.send("Ник не найден")
    else:
       a={}
@@ -124,7 +126,41 @@ async def start(start,name=1,region="eu"):
       await start.send(f"Сесия начата для {name}")
    
 
-@bot.command(name = "help")
+@bot.slash_command(name="day_sesssion",description="Сессию можно получить за определенное количство дней")
+async def day_sesssion(ctx,days:int,name:str=None):
+   if days < 0:
+      await ctx.send("Введите положительное число")
+      return
+   elif days>30:
+      await ctx.send("Сесиию можно получить только за 30 дней")
+      return
+   if name is not None:
+      b=collection.find_one({"name":name})
+   else:
+      userds=ctx.author.id
+      b=collection.find_one({"discord_id":userds})
+   if b is not None:
+      user =b.get("id")
+      region =b.get("region")
+      us = b.get("name")      
+      general_now= await Get.general(user=user,region=region)
+      general_old = await DataBase.day(user=user,cout_day=days)
+      if general_old is None:
+         await ctx.send(f"Вы не отслеживаетесь {days} дней")
+      result = await Compare.examination(general_now=general_now,general_old=general_old)
+      time=datetime.datetime.strptime(general_now.get("data"),"%d-%m-%Y %H:%M:%S")-datetime.datetime.strptime(general_old.get("data"),"%d-%m-%Y %H:%M:%S")
+      if result is not None:
+         a=await create_embed(general=result,time=time,name=us)
+         await ctx.send(embed=a)
+      else:
+         await ctx.send(f"Вы не сыграли ни одного боя за {days} дней")
+   else:
+      await ctx.send("Пользователь не отслежуеться")
+   
+
+
+
+@bot.slash_command(name = "help",description="Инструкция к командам")
 async def help(ctx):
    with open("help.txt","r",encoding="utf-8")as file:
       a=file.read()

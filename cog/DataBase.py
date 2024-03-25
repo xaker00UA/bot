@@ -1,19 +1,41 @@
 import asyncio
 from pymongo import MongoClient
 from cog import Get
-from config import KEY_DATABASE 
-cluster = MongoClient(KEY_DATABASE)
+import datetime
+from config import KEY_DATABASE
+cluster = MongoClient(KEY_DATABASE) 
 database=cluster["wotblitz"]
 collection=database["state_machine"]
 gen=database["state"]
 tank=database["tank"]
 player=database["user"]
+daydatabase=database["day"]
 
 
+async def date(day=31):
+    data_30day=datetime.datetime.now().replace(second=0,microsecond=0)-datetime.timedelta(days=day)
+    start =data_30day.replace(hour=0, minute=0, second=0)
+    end=(start+datetime.timedelta(days=1)).strftime("%d-%m-%Y %H:%M:%S")
+    start=start.strftime("%d-%m-%Y %H:%M:%S")
+    query={"data":{"$gte":start,"$lte":end}}
+    return query
 async def output(user,state_tank,general):
+    filter=await date()
     collection.replace_one(filter={"id":user},replacement=state_tank,upsert=True)
     gen.replace_one(filter={"id":user},replacement=general,upsert=True)
+    daydatabase.replace_one(filter=filter,replacement=general,upsert=True)
 
+
+
+async def day(user,cout_day):
+    filters= await date(cout_day)
+    filters["id"]=user
+    try:
+        a = daydatabase.find_one(filter=filters)
+        del a["_id"]
+    except TypeError:
+        return None        
+    return a
 async def input(user):  
     a = collection.find_one(filter={"id":user})
     b = gen.find_one(filter={"id":user})

@@ -82,14 +82,16 @@ async def com(now:list,old:list)  ->list:
     return summ
 
 
-async def examination(general_now,general_old,tank_old,tank_now)  ->set:
+async def examination(general_now,general_old,tank_old=None,tank_now=None)  ->set:
     x= await Com(general_old)
     y= await Com(general_now)
     a= await Calculate(now=y,old=x)
-    if a is not None:
-
+    if a is not None and tank_now is not None and tank_old is not None:
+    
         b= await com(now=tank_now["stata"],old=tank_old["stata"])
         return a,b
+    elif a is not None:
+        return a
     else:
         return None
 
