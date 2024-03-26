@@ -165,5 +165,5 @@ async def day_sesssion(ctx,days:int,name:str=None):
 async def help(ctx):
    with open("help.txt","r",encoding="utf-8")as file:
       a=file.read()
-      await ctx.send(embed=discord.Embed(title="Команды",description=a,colour=discord.Color.from_str("#9400D3")))
+      await ctx.send(embed=discord.Embed(title="Команды",description=a,colour=discord.Color.from_rgb(148, 0, 211)))
 bot.run(TOKEN)
