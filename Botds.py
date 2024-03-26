@@ -6,9 +6,10 @@ from cog import DataBase,Search,Compare,Get
 from config import TOKEN,KEY_DATABASE
 import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import logging
 
 
-
+logging.basicConfig(level=logging.INFO)
 
 async def create_embed(general, name,time,state=None):
 
@@ -43,11 +44,11 @@ async def power():
 
 @bot.event
 async def on_ready():
-   print(f'{bot.user} has connected to Discord!')
+   logging.info(f'{bot.user} has connected to Discord!')
    if cluster.server_info():
-      print("Connected to MongoDB")
+      logging.info("Connected to MongoDB")
    else:
-      print("Failed to connect to MongoDB")
+      logging.error("Failed to connect to MongoDB")
    scheduler = AsyncIOScheduler()
    scheduler.add_job(power, "cron", hour=5, minute=00)
    scheduler.start()

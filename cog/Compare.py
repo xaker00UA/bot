@@ -1,5 +1,9 @@
 
 from cog import DataBase
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 
@@ -18,12 +22,21 @@ async def Calculate(now:dict,old:dict)  ->dict:
     if a["battles"]==0:
         return None
     else:
-        result["battles"] = a["battles"]
-        result["wins"] = round(a["wins"]/a["battles"]*100,2)
-        result["damag"] = round(a["damage_dealt"]/a["battles"],2) 
-        result["accuracy"] = round(a["hits"]/a["shots"]*100,2)
-        result["survived"] = round(a["survived_battles"]/a["battles"]*100,2)
-        result["kkd"] = round(result["damag"]/(a["damage_received"]/a["battles"]),2)
+        try:
+            result["battles"] = a["battles"]
+            result["wins"] = round(a["wins"]/a["battles"]*100,2)
+            result["damag"] = round(a["damage_dealt"]/a["battles"],2)
+            try: 
+                result["accuracy"] = round(a["hits"]/a["shots"]*100,2)
+            except ZeroDivisionError:
+                result["accuracy"] = 0
+            result["survived"] = round(a["survived_battles"]/a["battles"]*100,2)
+            try:
+                result["kkd"] = round(result["damag"]/(a["damage_received"]/a["battles"]),2)
+            except ZeroDivisionError as e:
+                result["kkd"]=0
+        except ZeroDivisionError as e:
+            logging.error(e)
         return result
 
 async def Com(data:dict)  ->dict:
