@@ -31,8 +31,8 @@ cluster = MongoClient(KEY_DATABASE)
 database=cluster["wotblitz"]
 collection=database["user"]
 
-TOKEN = TOKEN
-PREFIX = '.'
+
+PREFIX = '!'
 intents = discord.Intents().all()
 
 
